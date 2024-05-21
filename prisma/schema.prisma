@@ -1,0 +1,147 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Representante {
+  id        Int       @id @default(autoincrement())
+  clientes  Cliente[]
+  pedidos   Pedido[]
+  usuario   User?     @relation(fields: [usuarioId], references: [id])
+  usuarioId Int?
+}
+
+model Cliente {
+  id              Int           @id @default(autoincrement())
+  representante   Representante @relation(fields: [representanteId], references: [id])
+  representanteId Int
+  pedidos         Pedido[]
+  usuario         User?         @relation(fields: [usuarioId], references: [id])
+  usuarioId       Int?
+  endereco        Endereco?
+}
+
+model Endereco {
+  id        Int     @id @default(autoincrement())
+  rua       String
+  cidade    String
+  estado    String
+  cep       String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  clienteId Int     @unique
+}
+
+model Produto {
+  id      Int             @id @default(autoincrement())
+  nome    String
+  tamanho String
+  cor     String
+  preco   Float
+  pedidos PedidoProduto[]
+}
+
+model Pedido {
+  id              Int             @id @default(autoincrement())
+  data            DateTime
+  cliente         Cliente         @relation(fields: [clienteId], references: [id])
+  clienteId       Int
+  representante   Representante   @relation(fields: [representanteId], references: [id])
+  representanteId Int
+  produtos        PedidoProduto[]
+}
+
+model PedidoProduto {
+  id         Int     @id @default(autoincrement())
+  pedido     Pedido  @relation(fields: [pedidoId], references: [id])
+  pedidoId   Int
+  produto    Produto @relation(fields: [produtoId], references: [id])
+  produtoId  Int
+  quantidade Int
+  preco      Float
+}
+
+model NivelAcesso {
+  id        Int    @id @default(autoincrement())
+  descricao String
+  usuarios  User[]
+}
+
+model User {
+  id             Int             @id @default(autoincrement())
+  name           String?
+  email          String          @unique
+  telefone       String?
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  // Optional for WebAuthn support
+  Authenticators Authenticator[]
+  Representantes Representante[]
+  Clientes       Cliente[]
+
+  nivelAcesso   NivelAcesso? @relation(fields: [nivelAcessoId], references: [id])
+  nivelAcessoId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               Int
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
