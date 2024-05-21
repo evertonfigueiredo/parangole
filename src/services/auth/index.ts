@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import Nodemailer from 'next-auth/providers/nodemailer'
-import { prisma } from '../database'
+import prisma from '../database'
 import { updateUser } from '../updateUser'
 
 export const { auth, handlers } = NextAuth({

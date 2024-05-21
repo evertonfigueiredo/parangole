@@ -15,8 +15,21 @@ import { useForm } from 'react-hook-form'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { toast } from '@/components/ui/use-toast'
+import { verificarPermissao } from '@/lib/verificarPermissao'
+import { useRouter } from 'next/navigation'
 
 export default function PageRepresentante() {
+  const router = useRouter()
+  async function verificar() {
+    const result = await verificarPermissao('Visitante')
+    if (result && !result.status) {
+      console.log(`/app/${result.nivelAcesso}`)
+      router.push(`/app/${result.nivelAcesso?.toLowerCase()}`)
+    }
+  }
+
+  verificar()
+
   const form = useForm()
 
   const handleSubmit = form.handleSubmit(async (data) => {

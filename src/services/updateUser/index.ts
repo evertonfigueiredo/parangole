@@ -1,4 +1,4 @@
-import { prisma } from '../database'
+import prisma from '../database'
 
 export const updateUser = async (input: { email: string }) => {
   const nivelPadrao = await prisma.nivelAcesso.findFirst({

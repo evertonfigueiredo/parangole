@@ -2,7 +2,7 @@
 'use server'
 
 import { auth } from '@/services/auth'
-import { prisma } from '@/services/database'
+import prisma from '@/services/database'
 
 export async function createClient(data: any) {
   try {
