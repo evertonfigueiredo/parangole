@@ -1,24 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUrl } from './lib/get-url'
+import { getToken } from 'next-auth/jwt'
 
-export function middleware(request: NextRequest) {
-  // Determinar o prefixo do cookie com base no ambiente
-  const cookiePrefix = process.env.NODE_ENV === 'production' ? '__Secure-' : ''
+export default async function middleware(request: NextRequest) {
+  const secureCookie = process.env.NODE_ENV === 'production'
+  const name = secureCookie
+    ? '__Secure-authjs.session-token'
+    : 'authjs.session-token'
 
-  // Construir o nome do cookie usando o prefixo determinado
-  const cookieName = `${cookiePrefix}authjs.session-token`
+  const jwt = await getToken({
+    req: request,
+    secret: process.env.AUTH_SECRET!,
+    secureCookie,
+    salt: name,
+  })
 
-  // Obter o token do cookie usando o nome do cookie construído
-  const token = request.cookies.get(cookieName)
   const pathname = request.nextUrl.pathname
 
-  if (pathname === '/auth' && token) {
-    return NextResponse.redirect(new URL(getUrl('/app')))
+  if (jwt) {
+    const nivelAcessoId = jwt.nivelAcessoId as number
+
+    if (!nivelAcessoId) {
+      return new Error('Nível de Acesso não valido.')
+    }
+
+    const userAccessPaths: Record<number, string> = {
+      1: '/app/master',
+      2: '/app/administrador',
+      3: '/app/representante',
+      4: '/app/cliente',
+      5: '/app/visitante',
+    }
+
+    // Redirect to specific path if user tries to access the auth page while logged in
+    if (pathname === '/auth') {
+      return NextResponse.redirect(
+        new URL(getUrl(userAccessPaths[nivelAcessoId])),
+      )
+    }
+
+    // Check if the user is trying to access a path they are not allowed to
+    const allowedPath = userAccessPaths[nivelAcessoId]
+    if (!pathname.startsWith(allowedPath)) {
+      return NextResponse.redirect(new URL(getUrl(allowedPath)))
+    }
+  } else {
+    // If user is not logged in and tries to access /app, redirect to /auth
+    if (pathname.includes('/app')) {
+      return NextResponse.redirect(new URL(getUrl('/auth')))
+    }
   }
 
-  if (pathname.includes('/app') && !token) {
-    return NextResponse.redirect(new URL(getUrl('/auth')))
-  }
+  // Allow the request to proceed if none of the conditions matched
+  return NextResponse.next()
 }
 
 export const config = {
