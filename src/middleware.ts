@@ -21,15 +21,15 @@ export default async function middleware(request: NextRequest) {
     const nivelAcessoId = jwt.nivelAcessoId as number
 
     if (!nivelAcessoId) {
-      return new Error('Nível de Acesso não valido.')
+      throw new Error('Nível de acesso negado!')
     }
 
     const userAccessPaths: Record<number, string> = {
       1: '/app/master',
-      2: '/app/administrador',
-      3: '/app/representante',
-      4: '/app/cliente',
-      5: '/app/visitante',
+      2: '/app/representante',
+      4: '/app/administrador',
+      5: '/app/cliente',
+      3: '/app/visitante',
     }
 
     // Redirect to specific path if user tries to access the auth page while logged in

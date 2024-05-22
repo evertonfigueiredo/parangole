@@ -8,7 +8,7 @@ import { updateUser } from '../updateUser'
 export const { auth, handlers } = NextAuth({
   pages: {
     signIn: '/auth',
-    signOut: '/auth',
+    signOut: '/',
     error: '/auth',
     verifyRequest: '/auth',
     newUser: '/app',
@@ -65,7 +65,7 @@ export const { auth, handlers } = NextAuth({
           telefone: user.telefone,
           emailVerified: user.emailVerified,
           image: user.image,
-          nivelAcessoId: user.nivelAcessoId,
+          nivelAcessoId: user.nivelAcessoId == null ? 3 : user.nivelAcessoId,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         }

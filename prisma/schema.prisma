@@ -7,8 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Empresa {
+  id              Int             @id @default(autoincrement())
+  nome            String
+  administradores User[]          @relation("AdministradorEmpresa")
+  clientes        Cliente[]
+  representantes  Representante[]
+}
+
 model Representante {
   id        Int       @id @default(autoincrement())
+  empresa   Empresa   @relation(fields: [empresaId], references: [id])
+  empresaId Int
   clientes  Cliente[]
   pedidos   Pedido[]
   usuario   User?     @relation(fields: [usuarioId], references: [id])
@@ -23,6 +33,8 @@ model Cliente {
   usuario         User?         @relation(fields: [usuarioId], references: [id])
   usuarioId       Int?
   endereco        Endereco?
+  empresa         Empresa       @relation(fields: [empresaId], references: [id])
+  empresaId       Int
 }
 
 model Endereco {
@@ -83,12 +95,12 @@ model User {
   Authenticators Authenticator[]
   Representantes Representante[]
   Clientes       Cliente[]
+  nivelAcesso    NivelAcesso?    @relation(fields: [nivelAcessoId], references: [id])
+  nivelAcessoId  Int?
 
-  nivelAcesso   NivelAcesso? @relation(fields: [nivelAcessoId], references: [id])
-  nivelAcessoId Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  empresas  Empresa[] @relation("AdministradorEmpresa")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Account {
