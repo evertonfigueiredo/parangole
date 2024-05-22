@@ -16,25 +16,23 @@ model Empresa {
 }
 
 model Representante {
-  id        Int       @id @default(autoincrement())
-  empresa   Empresa   @relation(fields: [empresaId], references: [id])
-  empresaId Int
-  clientes  Cliente[]
-  pedidos   Pedido[]
-  usuario   User?     @relation(fields: [usuarioId], references: [id])
-  usuarioId Int?
+  id           Int           @id @default(autoincrement())
+  clientes     Cliente[]     // Agora clientes é uma array
+  pedidos      Pedido[]
+  usuario      User?         @relation(fields: [usuarioId], references: [id])
+  usuarioId    Int?
+  empresa      Empresa       @relation(fields: [empresaId], references: [id])
+  empresaId    Int
 }
 
 model Cliente {
   id              Int           @id @default(autoincrement())
-  representante   Representante @relation(fields: [representanteId], references: [id])
-  representanteId Int
+  representantes  Representante[] // Agora representantes é uma array
   pedidos         Pedido[]
   usuario         User?         @relation(fields: [usuarioId], references: [id])
   usuarioId       Int?
   endereco        Endereco?
-  empresa         Empresa       @relation(fields: [empresaId], references: [id])
-  empresaId       Int
+  empresas        Empresa[]
 }
 
 model Endereco {

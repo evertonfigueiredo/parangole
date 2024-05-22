@@ -44,13 +44,25 @@ export async function createClient(data: any) {
       data: {
         email: data.email,
         nivelAcessoId: nivelAcesso?.id,
+        empresas: {
+          connect: [{ id: representante.empresaId }],
+        },
       },
     })
 
     const client = await prisma.cliente.create({
       data: {
-        representanteId: representante.id,
+        representantes: {
+          connect: {
+            id: representante.id,
+          },
+        },
         usuarioId: user.id,
+        empresas: {
+          connect: {
+            id: representante.empresaId,
+          },
+        },
       },
     })
 
